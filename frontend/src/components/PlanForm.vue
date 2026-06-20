@@ -59,7 +59,7 @@
 <script setup>
 import { ref, reactive, watch, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { createPlan, submitPlan } from '../api/plan'
+import { createPlan } from '../api/plan'
 import { getLeaders } from '../api/user'
 
 const props = defineProps({
@@ -123,15 +123,20 @@ async function doSave(submitAfterSave) {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
 
+  if (submitAfterSave && !form.approveLeaderId) {
+    ElMessage.warning('请选择审批领导')
+    return
+  }
+
   loading.value = true
   try {
-    const res = await createPlan(form)
-    if (submitAfterSave) {
-      await submitPlan(res.data.id, form.approveLeaderId)
-      ElMessage.success('已提交审批')
-    } else {
-      ElMessage.success('已保存草稿')
+    // 提交审批时带上 approveLeaderId，后端一个事务完成创建+提交
+    const payload = { ...form }
+    if (!submitAfterSave) {
+      payload.approveLeaderId = null
     }
+    await createPlan(payload)
+    ElMessage.success(submitAfterSave ? '已提交审批' : '已保存草稿')
     emit('success')
     emit('close')
   } catch (e) {

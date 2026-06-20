@@ -132,12 +132,14 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getPlanList, getPlanDetail, submitPlan, withdrawPlan } from '../../api/plan'
 import { useUserStore } from '../../store/index'
 import PlanForm from '../../components/PlanForm.vue'
 import ApproveDialog from '../../components/ApproveDialog.vue'
 
+const route = useRoute()
 const userStore = useUserStore()
 const isLeader = computed(() => userStore.role === 'LEADER')
 const currentUserId = computed(() => userStore.userId)
@@ -255,6 +257,10 @@ async function handleDetail(row) {
 
 onMounted(() => {
   fetchData()
+  // 快捷操作跳转过来时自动打开新建弹框
+  if (route.query.action === 'create') {
+    openCreate()
+  }
 })
 </script>
 

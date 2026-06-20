@@ -10,7 +10,7 @@
 
     <!-- 统计卡片 -->
     <el-row :gutter="16" class="stat-row">
-      <el-col :span="6" v-for="item in stats" :key="item.label">
+      <el-col :span="6" v-for="item in statCards" :key="item.label">
         <div class="stat-card" :style="{ borderTop: `3px solid ${item.color}` }">
           <div class="stat-icon" :style="{ background: item.bg }">
             <el-icon :size="24" :style="{ color: item.color }">
@@ -33,14 +33,14 @@
             <span class="card-title">快捷操作</span>
           </template>
           <div class="quick-actions">
-            <el-button @click="router.push('/plan')">
+            <el-button v-if="!isLeader" @click="router.push('/plan?action=create')">
               <el-icon><Plus /></el-icon>新建计划
             </el-button>
-            <el-button @click="router.push('/result')">
-              <el-icon><Upload /></el-icon>提交成果
+            <el-button @click="router.push('/plan')">
+              <el-icon><Document /></el-icon>查看计划
             </el-button>
-            <el-button v-if="userStore.role === 'LEADER'" @click="router.push('/approve')">
-              <el-icon><Checked /></el-icon>去审批
+            <el-button @click="router.push('/result')">
+              <el-icon><Finished /></el-icon>查看成果
             </el-button>
           </div>
         </el-card>
@@ -58,12 +58,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../store/index'
+import { getStatistics } from '../../api/statistics'
 
 const router = useRouter()
 const userStore = useUserStore()
+const isLeader = computed(() => userStore.role === 'LEADER')
+
+const stats = ref({})
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -79,12 +83,31 @@ const today = new Date().toLocaleDateString('zh-CN', {
   weekday: 'long',
 })
 
-const stats = [
-  { label: '我的计划', value: '—', icon: 'Document', color: '#409eff', bg: '#ecf5ff' },
-  { label: '待审批', value: '—', icon: 'Clock', color: '#e6a23c', bg: '#fdf6ec' },
-  { label: '我的成果', value: '—', icon: 'Finished', color: '#67c23a', bg: '#f0f9eb' },
-  { label: '未读通知', value: '—', icon: 'Bell', color: '#909399', bg: '#f4f4f5' },
-]
+const statCards = computed(() => {
+  if (isLeader.value) {
+    return [
+      { label: '待审批计划', value: stats.value.pendingPlans ?? '—', icon: 'Document', color: '#e6a23c', bg: '#fdf6ec' },
+      { label: '待审批成果', value: stats.value.pendingResults ?? '—', icon: 'Finished', color: '#f56c6c', bg: '#fef0f0' },
+      { label: '待办总计', value: stats.value.pendingTotal ?? '—', icon: 'Bell', color: '#409eff', bg: '#ecf5ff' },
+      { label: '审批中心', value: '→', icon: 'Checked', color: '#67c23a', bg: '#f0f9eb', action: () => router.push('/approve') },
+    ]
+  }
+  return [
+    { label: '我的计划', value: stats.value.myPlans ?? '—', icon: 'Document', color: '#409eff', bg: '#ecf5ff' },
+    { label: '待审批', value: stats.value.pendingPlans ?? '—', icon: 'Clock', color: '#e6a23c', bg: '#fdf6ec' },
+    { label: '我的成果', value: stats.value.myResults ?? '—', icon: 'Finished', color: '#67c23a', bg: '#f0f9eb' },
+    { label: '未读通知', value: '—', icon: 'Bell', color: '#909399', bg: '#f4f4f5' },
+  ]
+})
+
+onMounted(async () => {
+  try {
+    const res = await getStatistics()
+    stats.value = res.data
+  } catch (e) {
+    // 静默失败
+  }
+})
 </script>
 
 <style scoped>
@@ -107,10 +130,6 @@ const stats = [
   font-size: 13px;
   color: #909399;
   margin: 0;
-}
-
-.stat-row .el-col {
-  margin-bottom: 0;
 }
 
 .stat-card {

@@ -63,12 +63,23 @@ public class PlanController {
     }
 
     /**
-     * 创建计划（保存草稿）
+     * 创建计划
+     * 如果传了 approveLeaderId，则创建后直接提交审批（一个事务，失败全部回滚）
+     * 如果没传，则保存为草稿
      */
     @PostMapping
     public R<Plan> create(@Valid @RequestBody Plan plan, Authentication authentication) {
         Long userId = (Long) authentication.getDetails();
+        Long approveLeaderId = plan.getApproveLeaderId();
+
         Plan created = planService.createPlan(plan, userId);
+
+        // 如果指定了审批领导，创建后直接提交
+        if (approveLeaderId != null) {
+            planService.submit(created.getId(), userId, approveLeaderId);
+            created = planService.getById(created.getId());
+        }
+
         return R.ok(created);
     }
 

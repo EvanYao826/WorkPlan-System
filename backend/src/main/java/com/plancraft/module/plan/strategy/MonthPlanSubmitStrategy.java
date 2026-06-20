@@ -1,14 +1,11 @@
 package com.plancraft.module.plan.strategy;
 
-import com.plancraft.common.exception.BusinessException;
 import com.plancraft.module.plan.entity.Plan;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-
 /**
  * 月计划提交策略
- * 校验：计划日期必须是当月第一天
+ * 月计划无额外限制，通用校验已由 DateValidator 处理
  */
 @Component
 public class MonthPlanSubmitStrategy implements PlanSubmitStrategy {
@@ -20,12 +17,6 @@ public class MonthPlanSubmitStrategy implements PlanSubmitStrategy {
 
     @Override
     public void validate(Plan plan) {
-        if (plan.getPlanDate() == null) {
-            throw new BusinessException("月计划必须指定日期");
-        }
-        LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
-        if (!plan.getPlanDate().equals(firstDayOfMonth)) {
-            throw new BusinessException("月计划的日期必须是当月第一天（" + firstDayOfMonth + "）");
-        }
+        // 月计划无特殊限制，日期合法性由 DateValidator 统一校验
     }
 }

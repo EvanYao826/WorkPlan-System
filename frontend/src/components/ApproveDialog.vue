@@ -1,17 +1,17 @@
 <template>
   <el-dialog
     :model-value="visible"
-    title="审批计划"
+    :title="type === 'result' ? '审批成果' : '审批计划'"
     width="560px"
     @close="$emit('close')"
   >
     <template v-if="plan">
       <el-descriptions :column="2" border>
         <el-descriptions-item label="标题" :span="2">{{ plan.title }}</el-descriptions-item>
-        <el-descriptions-item label="类型">{{ plan.type === 1 ? '日计划' : '月计划' }}</el-descriptions-item>
-        <el-descriptions-item label="计划日期">{{ plan.planDate }}</el-descriptions-item>
+        <el-descriptions-item v-if="type !== 'result'" label="类型">{{ plan.type === 1 ? '日计划' : '月计划' }}</el-descriptions-item>
+        <el-descriptions-item v-if="type !== 'result'" label="计划日期">{{ plan.planDate }}</el-descriptions-item>
         <el-descriptions-item label="提交时间" :span="2">{{ plan.submitTime }}</el-descriptions-item>
-        <el-descriptions-item label="计划内容" :span="2">
+        <el-descriptions-item label="内容" :span="2">
           <div style="white-space: pre-wrap; line-height: 1.8">{{ plan.content }}</div>
         </el-descriptions-item>
       </el-descriptions>
@@ -42,10 +42,12 @@
 import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { approvePlan, rejectPlan } from '../api/plan'
+import { approveResult, rejectResult } from '../api/result'
 
 const props = defineProps({
   visible: Boolean,
   plan: Object,
+  type: { type: String, default: 'plan' }, // 'plan' 或 'result'
 })
 
 const emit = defineEmits(['close', 'success'])
@@ -60,7 +62,11 @@ watch(() => props.visible, (val) => {
 async function handleApprove() {
   loading.value = true
   try {
-    await approvePlan(props.plan.id, comment.value || null)
+    if (props.type === 'result') {
+      await approveResult(props.plan.id, comment.value || null)
+    } else {
+      await approvePlan(props.plan.id, comment.value || null)
+    }
     ElMessage.success('审批通过')
     emit('success')
     emit('close')
@@ -78,7 +84,11 @@ async function handleReject() {
   }
   loading.value = true
   try {
-    await rejectPlan(props.plan.id, comment.value)
+    if (props.type === 'result') {
+      await rejectResult(props.plan.id, comment.value)
+    } else {
+      await rejectPlan(props.plan.id, comment.value)
+    }
     ElMessage.success('已驳回')
     emit('success')
     emit('close')

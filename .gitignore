@@ -1,0 +1,55 @@
+# ============================================================
+# PlanCraft .gitignore
+# ============================================================
+
+# ----- Java / Maven -----
+backend/target/
+backend/*.jar
+backend/*.class
+*.log
+hs_err_pid*
+
+# ----- IDE -----
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ----- Spring Boot -----
+backend/src/main/resources/application-local.yml
+
+# ----- Node / Vue -----
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# ----- OS -----
+.DS_Store
+Desktop.ini
+ehthumbs.db
+ehthumbs_vista.db
+
+# ----- Logs -----
+logs/
+*.log
+
+# ----- Redis dump -----
+dump.rdb
+
+# ----- Uploaded files -----
+uploads/

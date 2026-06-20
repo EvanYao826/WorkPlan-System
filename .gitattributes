@@ -1,0 +1,35 @@
+# 统一换行符
+* text=auto eol=lf
+
+# Java
+*.java text eol=lf diff=java
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.properties text eol=lf
+*.sql text eol=lf
+
+# Vue / JS
+*.vue text eol=lf diff=html
+*.js text eol=lf
+*.ts text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+
+# Markdown
+*.md text eol=lf diff=markdown
+
+# 二进制文件不 diff
+*.jar binary
+*.class binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

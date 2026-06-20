@@ -24,6 +24,9 @@
           <el-button @click="resetFilter">
             <el-icon><Refresh /></el-icon>重置
           </el-button>
+          <el-button v-if="!isLeader" type="success" @click="openCreate">
+            <el-icon><Plus /></el-icon>新建计划
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -56,9 +59,19 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="170" />
-        <el-table-column label="操作" width="150" align="center" fixed="right">
+        <el-table-column label="操作" width="200" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleDetail(row)">详情</el-button>
+            <!-- 同事操作 -->
+            <template v-if="!isLeader || row.userId === currentUserId">
+              <el-button v-if="row.status === 0 || row.status === 3" type="primary" link size="small" @click="handleSubmit(row)">提交</el-button>
+              <el-button v-if="row.status === 0 || row.status === 3" type="warning" link size="small" @click="openEdit(row)">编辑</el-button>
+              <el-button v-if="row.status === 1" type="danger" link size="small" @click="handleWithdraw(row)">撤回</el-button>
+            </template>
+            <!-- 领导操作 -->
+            <template v-if="isLeader && row.status === 1">
+              <el-button type="success" link size="small" @click="openApprove(row)">审批</el-button>
+            </template>
+            <el-button type="info" link size="small" @click="handleDetail(row)">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -75,6 +88,22 @@
         />
       </div>
     </el-card>
+
+    <!-- 新建/编辑弹框 -->
+    <PlanForm
+      :visible="formVisible"
+      :edit-data="editData"
+      @close="formVisible = false"
+      @success="fetchData"
+    />
+
+    <!-- 审批弹框 -->
+    <ApproveDialog
+      :visible="approveVisible"
+      :plan="approveData"
+      @close="approveVisible = false"
+      @success="fetchData"
+    />
 
     <!-- 详情弹框 -->
     <el-dialog v-model="detailVisible" title="计划详情" width="600px">
@@ -102,13 +131,25 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { getPlanList, getPlanDetail } from '../../api/plan'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getPlanList, getPlanDetail, submitPlan, withdrawPlan } from '../../api/plan'
+import { useUserStore } from '../../store/index'
+import PlanForm from '../../components/PlanForm.vue'
+import ApproveDialog from '../../components/ApproveDialog.vue'
+
+const userStore = useUserStore()
+const isLeader = computed(() => userStore.role === 'LEADER')
+const currentUserId = computed(() => userStore.userId)
 
 const loading = ref(false)
 const tableData = ref([])
 const detailVisible = ref(false)
 const detailData = ref(null)
+const formVisible = ref(false)
+const editData = ref(null)
+const approveVisible = ref(false)
+const approveData = ref(null)
 
 const filter = reactive({
   type: null,
@@ -162,6 +203,48 @@ function resetFilter() {
   filter.title = ''
   pagination.page = 1
   fetchData()
+}
+
+function openCreate() {
+  editData.value = null
+  formVisible.value = true
+}
+
+function openEdit(row) {
+  editData.value = row
+  formVisible.value = true
+}
+
+function openApprove(row) {
+  approveData.value = row
+  approveVisible.value = true
+}
+
+async function handleSubmit(row) {
+  if (!row.approveLeaderId) {
+    ElMessage.warning('请先编辑计划并选择审批领导')
+    openEdit(row)
+    return
+  }
+  await ElMessageBox.confirm('确认提交审批？', '提示', { type: 'info' })
+  try {
+    await submitPlan(row.id, row.approveLeaderId)
+    ElMessage.success('已提交审批')
+    fetchData()
+  } catch (e) {
+    // 错误已由拦截器处理
+  }
+}
+
+async function handleWithdraw(row) {
+  await ElMessageBox.confirm('确认撤回？撤回后将变为草稿状态。', '提示', { type: 'warning' })
+  try {
+    await withdrawPlan(row.id)
+    ElMessage.success('已撤回')
+    fetchData()
+  } catch (e) {
+    // 错误已由拦截器处理
+  }
 }
 
 async function handleDetail(row) {

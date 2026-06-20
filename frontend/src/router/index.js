@@ -10,22 +10,28 @@ const routes = [
   },
   {
     path: '/',
+    component: () => import('../components/AppLayout.vue'),
     redirect: '/dashboard',
-  },
-  {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('../views/dashboard/DashboardView.vue'),
-  },
-  {
-    path: '/plan',
-    name: 'Plan',
-    component: () => import('../views/plan/PlanView.vue'),
-  },
-  {
-    path: '/result',
-    name: 'Result',
-    component: () => import('../views/result/ResultView.vue'),
+    children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('../views/dashboard/DashboardView.vue'),
+        meta: { title: '工作台' },
+      },
+      {
+        path: 'plan',
+        name: 'Plan',
+        component: () => import('../views/plan/PlanView.vue'),
+        meta: { title: '计划管理' },
+      },
+      {
+        path: 'result',
+        name: 'Result',
+        component: () => import('../views/result/ResultView.vue'),
+        meta: { title: '成果管理' },
+      },
+    ],
   },
 ]
 
@@ -34,7 +40,6 @@ const router = createRouter({
   routes,
 })
 
-// 路由守卫：未登录跳转登录页
 router.beforeEach((to, from, next) => {
   if (to.meta.public) {
     next()

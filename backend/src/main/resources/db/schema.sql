@@ -190,10 +190,10 @@ INSERT INTO `user` (`id`, `username`, `password`, `name`, `role`, `department_id
 INSERT INTO `user` (`id`, `username`, `password`, `name`, `role`, `department_id`, `status`) VALUES
 (2, 'leader1', 'leader123', '张经理', 'LEADER', 2, 1);
 
--- 测试员工(密码: emp123)
+-- 测试同事(密码: emp123)
 INSERT INTO `user` (`id`, `username`, `password`, `name`, `role`, `department_id`, `status`) VALUES
-(3, 'emp1', 'emp123', '李员工', 'EMPLOYEE', 2, 1),
-(4, 'emp2', 'emp123', '王员工', 'EMPLOYEE', 2, 1);
+(3, 'emp1', 'emp123', '李明', 'EMPLOYEE', 2, 1),
+(4, 'emp2', 'emp123', '王华', 'EMPLOYEE', 2, 1);
 
 -- 汇报关系: leader1 管 emp1, emp2
 INSERT INTO `user_relation` (`id`, `leader_id`, `user_id`) VALUES

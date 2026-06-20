@@ -4,6 +4,7 @@ import com.plancraft.common.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -20,11 +21,15 @@ import java.util.List;
 @Component
 public class HandlerChain<T> {
 
-    private List<Handler<T>> handlers;
+    private List<Handler<T>> handlers = new ArrayList<>();
 
-    @Autowired
+    @Autowired(required = false)
     @SuppressWarnings("unchecked")
     public void setHandlers(List<Handler<?>> allHandlers) {
+        if (allHandlers == null || allHandlers.isEmpty()) {
+            this.handlers = new ArrayList<>();
+            return;
+        }
         this.handlers = allHandlers.stream()
                 .filter(h -> matchesType(h))
                 .map(h -> (Handler<T>) h)

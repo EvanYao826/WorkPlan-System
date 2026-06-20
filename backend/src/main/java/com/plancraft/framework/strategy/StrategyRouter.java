@@ -26,9 +26,10 @@ public class StrategyRouter {
     /**
      * 自动注入所有 Strategy 实现
      */
-    @Autowired
+    @Autowired(required = false)
     @SuppressWarnings("unchecked")
     public void setStrategies(List<Strategy<?, ?>> strategies) {
+        if (strategies == null) return;
         for (Strategy<?, ?> strategy : strategies) {
             String className = strategy.getClass().getSimpleName();
             strategyMap.computeIfAbsent(className, k -> new ConcurrentHashMap<>())

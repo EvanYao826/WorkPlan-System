@@ -47,6 +47,20 @@ public class ResultService extends ServiceImpl<ResultMapper, PlanResult> {
      */
     @Transactional
     public PlanResult createResult(PlanResult result, Long userId) {
+        // 校验：同一个计划不能重复提交成果（草稿/待审批/已通过的成果存在时不允许）
+        if (result.getPlanId() != null) {
+            long existCount = count(new LambdaQueryWrapper<PlanResult>()
+                    .eq(PlanResult::getPlanId, result.getPlanId())
+                    .eq(PlanResult::getUserId, userId)
+                    .in(PlanResult::getStatus,
+                            ResultStatus.DRAFT.getCode(),
+                            ResultStatus.PENDING.getCode(),
+                            ResultStatus.APPROVED.getCode()));
+            if (existCount > 0) {
+                throw new BusinessException("该计划已有成果（草稿/待审批/已通过），不能重复提交");
+            }
+        }
+
         result.setUserId(userId);
         result.setStatus(ResultStatus.DRAFT.getCode());
         result.setRejectCount(0);

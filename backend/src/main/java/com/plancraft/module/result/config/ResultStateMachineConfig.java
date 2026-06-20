@@ -1,14 +1,18 @@
 package com.plancraft.module.result.config;
 
+import com.plancraft.framework.chain.Handler;
+import com.plancraft.framework.chain.HandlerChain;
 import com.plancraft.framework.statemachine.StateMachine;
+import com.plancraft.module.result.entity.PlanResult;
 import com.plancraft.module.result.enums.ResultEvent;
 import com.plancraft.module.result.enums.ResultStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+
 /**
- * 成果模块状态机配置
- * 转换规则与计划一致
+ * 成果模块配置：状态机 + 责任链
  */
 @Configuration
 public class ResultStateMachineConfig {
@@ -22,5 +26,10 @@ public class ResultStateMachineConfig {
           .addTransition(ResultStatus.PENDING, ResultEvent.WITHDRAW, ResultStatus.DRAFT)
           .addTransition(ResultStatus.REJECTED, ResultEvent.SUBMIT, ResultStatus.PENDING);
         return sm;
+    }
+
+    @Bean
+    public HandlerChain<PlanResult> resultHandlerChain(List<Handler<PlanResult>> handlers) {
+        return new HandlerChain<>(handlers);
     }
 }

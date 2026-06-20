@@ -1,21 +1,18 @@
 package com.plancraft.module.plan.config;
 
+import com.plancraft.framework.chain.Handler;
+import com.plancraft.framework.chain.HandlerChain;
 import com.plancraft.framework.statemachine.StateMachine;
+import com.plancraft.module.plan.entity.Plan;
 import com.plancraft.module.plan.enums.PlanEvent;
 import com.plancraft.module.plan.enums.PlanStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+
 /**
- * 计划模块状态机配置
- * 注册所有合法的状态转换规则
- *
- * 转换规则：
- *   DRAFT   + SUBMIT   → PENDING
- *   PENDING + APPROVE  → APPROVED
- *   PENDING + REJECT   → REJECTED
- *   PENDING + WITHDRAW → DRAFT
- *   REJECTED + SUBMIT  → PENDING
+ * 计划模块配置：状态机 + 责任链
  */
 @Configuration
 public class PlanStateMachineConfig {
@@ -29,5 +26,10 @@ public class PlanStateMachineConfig {
           .addTransition(PlanStatus.PENDING, PlanEvent.WITHDRAW, PlanStatus.DRAFT)
           .addTransition(PlanStatus.REJECTED, PlanEvent.SUBMIT, PlanStatus.PENDING);
         return sm;
+    }
+
+    @Bean
+    public HandlerChain<Plan> planHandlerChain(List<Handler<Plan>> handlers) {
+        return new HandlerChain<>(handlers);
     }
 }

@@ -25,26 +25,28 @@
       </el-col>
     </el-row>
 
-    <!-- 快捷入口 + 通知 -->
+    <!-- 图表区 -->
     <el-row :gutter="16" style="margin-top: 16px">
       <el-col :span="12">
-        <el-card shadow="never" class="quick-card">
+        <el-card shadow="never" class="chart-card">
           <template #header>
-            <span class="card-title">快捷操作</span>
+            <span class="card-title">计划状态分布</span>
           </template>
-          <div class="quick-actions">
-            <el-button v-if="!isLeader" @click="router.push('/plan?action=create')">
-              <el-icon><Plus /></el-icon>新建计划
-            </el-button>
-            <el-button @click="router.push('/plan')">
-              <el-icon><Document /></el-icon>查看计划
-            </el-button>
-            <el-button @click="router.push('/result')">
-              <el-icon><Finished /></el-icon>查看成果
-            </el-button>
-          </div>
+          <div ref="planChartRef" class="chart-container"></div>
         </el-card>
       </el-col>
+      <el-col :span="12">
+        <el-card shadow="never" class="chart-card">
+          <template #header>
+            <span class="card-title">成果状态分布</span>
+          </template>
+          <div ref="resultChartRef" class="chart-container"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <!-- 通知 + 快捷入口 -->
+    <el-row :gutter="16" style="margin-top: 16px">
       <el-col :span="12">
         <el-card shadow="never" class="quick-card">
           <template #header>
@@ -67,24 +69,22 @@
           </div>
         </el-card>
       </el-col>
-    </el-row>
-
-    <!-- 图表区 -->
-    <el-row :gutter="16" style="margin-top: 16px">
       <el-col :span="12">
-        <el-card shadow="never" class="chart-card">
+        <el-card shadow="never" class="quick-card">
           <template #header>
-            <span class="card-title">计划状态分布</span>
+            <span class="card-title">快捷操作</span>
           </template>
-          <div ref="planChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card shadow="never" class="chart-card">
-          <template #header>
-            <span class="card-title">成果状态分布</span>
-          </template>
-          <div ref="resultChartRef" class="chart-container"></div>
+          <div class="quick-actions">
+            <el-button v-if="!isLeader" type="primary" @click="router.push('/plan?action=create')">
+              <el-icon><Plus /></el-icon>新建计划
+            </el-button>
+            <el-button @click="router.push('/plan')">
+              <el-icon><Document /></el-icon>查看计划
+            </el-button>
+            <el-button @click="router.push('/result')">
+              <el-icon><Finished /></el-icon>查看成果
+            </el-button>
+          </div>
         </el-card>
       </el-col>
     </el-row>
@@ -193,11 +193,33 @@ function handleResize() {
 }
 
 function initCharts() {
+  const statusColors = {
+    '草稿': '#909399',
+    '待审批': '#e6a23c',
+    '已通过': '#67c23a',
+    '已驳回': '#f56c6c',
+    '已撤回': '#409eff',
+  }
+
   if (planChartRef.value) {
     planChart = echarts.init(planChartRef.value)
+    const planData = isLeader.value
+      ? [
+          { value: stats.value.pendingPlans || 0, name: '待审批' },
+          { value: stats.value.approvedPlans || 0, name: '已通过' },
+          { value: stats.value.rejectedPlans || 0, name: '已驳回' },
+        ]
+      : [
+          { value: stats.value.planDraft || 0, name: '草稿' },
+          { value: stats.value.planPending || 0, name: '待审批' },
+          { value: stats.value.planApproved || 0, name: '已通过' },
+          { value: stats.value.planRejected || 0, name: '已驳回' },
+          { value: stats.value.planWithdrawn || 0, name: '已撤回' },
+        ]
+
     planChart.setOption({
-      tooltip: { trigger: 'item' },
-      legend: { bottom: 0 },
+      tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+      legend: { bottom: 0, itemWidth: 10, itemHeight: 10 },
       series: [{
         type: 'pie',
         radius: ['40%', '70%'],
@@ -205,19 +227,33 @@ function initCharts() {
         itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
         label: { show: false },
         emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } },
-        data: [
-          { value: stats.value.pendingPlans || 0, name: '待审批', itemStyle: { color: '#e6a23c' } },
-          { value: stats.value.myPlans ? stats.value.myPlans - (stats.value.pendingPlans || 0) : 0, name: '其他', itemStyle: { color: '#409eff' } },
-        ],
+        data: planData.map(item => ({
+          ...item,
+          itemStyle: { color: statusColors[item.name] },
+        })),
       }],
     })
   }
 
   if (resultChartRef.value) {
     resultChart = echarts.init(resultChartRef.value)
+    const resultData = isLeader.value
+      ? [
+          { value: stats.value.pendingResults || 0, name: '待审批' },
+          { value: stats.value.approvedResults || 0, name: '已通过' },
+          { value: stats.value.rejectedResults || 0, name: '已驳回' },
+        ]
+      : [
+          { value: stats.value.resultDraft || 0, name: '草稿' },
+          { value: stats.value.resultPending || 0, name: '待审批' },
+          { value: stats.value.resultApproved || 0, name: '已通过' },
+          { value: stats.value.resultRejected || 0, name: '已驳回' },
+          { value: stats.value.resultWithdrawn || 0, name: '已撤回' },
+        ]
+
     resultChart.setOption({
-      tooltip: { trigger: 'item' },
-      legend: { bottom: 0 },
+      tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+      legend: { bottom: 0, itemWidth: 10, itemHeight: 10 },
       series: [{
         type: 'pie',
         radius: ['40%', '70%'],
@@ -225,10 +261,10 @@ function initCharts() {
         itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
         label: { show: false },
         emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } },
-        data: [
-          { value: stats.value.pendingResults || 0, name: '待审批', itemStyle: { color: '#e6a23c' } },
-          { value: stats.value.myResults ? stats.value.myResults - (stats.value.pendingResults || 0) : 0, name: '其他', itemStyle: { color: '#67c23a' } },
-        ],
+        data: resultData.map(item => ({
+          ...item,
+          itemStyle: { color: statusColors[item.name] },
+        })),
       }],
     })
   }
@@ -304,6 +340,7 @@ function initCharts() {
 .quick-actions {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .notification-list {

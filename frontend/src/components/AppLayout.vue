@@ -31,6 +31,11 @@
         </el-menu-item>
 
         <!-- 领导专属菜单 -->
+        <el-menu-item v-if="userStore.role === 'LEADER'" index="/department">
+          <el-icon><OfficeBuilding /></el-icon>
+          <template #title>部门管理</template>
+        </el-menu-item>
+
         <el-menu-item v-if="userStore.role === 'LEADER'" index="/approve">
           <el-icon><Checked /></el-icon>
           <template #title>审批中心</template>

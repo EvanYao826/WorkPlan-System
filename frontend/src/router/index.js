@@ -31,6 +31,12 @@ const routes = [
         component: () => import('../views/result/ResultView.vue'),
         meta: { title: '成果管理' },
       },
+      {
+        path: 'department',
+        name: 'Department',
+        component: () => import('../views/department/DepartmentView.vue'),
+        meta: { title: '部门管理' },
+      },
     ],
   },
 ]

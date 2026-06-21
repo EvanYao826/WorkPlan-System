@@ -37,6 +37,12 @@ const routes = [
         component: () => import('../views/department/DepartmentView.vue'),
         meta: { title: '部门管理' },
       },
+      {
+        path: 'approve',
+        name: 'Approve',
+        component: () => import('../views/approve/ApproveView.vue'),
+        meta: { title: '审批中心' },
+      },
     ],
   },
 ]

@@ -146,15 +146,17 @@ flowchart LR
 
 ## 📸 效果展示
 
-> 开发中，待补充截图。
-
 | 登录页 | 工作台 |
 | :----: | :----: |
-| 待截图 | 待截图 |
+| ![登录页](docs/screenshots/login.png) | ![工作台](docs/screenshots/dashboard.png) |
 
 | 计划管理 | 审批弹框 |
 | :----: | :----: |
-| 待截图 | 待截图 |
+| ![计划管理](docs/screenshots/plan.png) | ![审批弹框](docs/screenshots/approve.png) |
+
+| 成果管理 | 部门管理 |
+| :----: | :----: |
+| ![成果管理](docs/screenshots/result.png) | ![部门管理](docs/screenshots/department.png) |
 
 ---
 

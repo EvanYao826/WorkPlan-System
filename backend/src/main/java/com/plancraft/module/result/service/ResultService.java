@@ -11,11 +11,11 @@ import com.plancraft.module.result.entity.PlanResult;
 import com.plancraft.module.result.enums.ResultEvent;
 import com.plancraft.module.result.enums.ResultStatus;
 import com.plancraft.module.result.mapper.ResultMapper;
+import com.plancraft.module.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -25,6 +25,7 @@ public class ResultService extends ServiceImpl<ResultMapper, PlanResult> {
 
     private final StateMachine<ResultStatus, ResultEvent> resultStateMachine;
     private final ResultApprovalLogService approvalLogService;
+    private final NotificationService notificationService;
 
     @Lazy
     private final HandlerChain<PlanResult> resultHandlerChain;
@@ -100,6 +101,11 @@ public class ResultService extends ServiceImpl<ResultMapper, PlanResult> {
 
         approvalLogService.log(resultId, userId, "SUBMIT",
                 fromStatus.getCode(), toStatus.getCode(), null);
+
+        // 通知领导：有新成果待审批
+        notificationService.sendNotification(approveLeaderId,
+                "新成果待审批", "员工提交了成果《" + result.getTitle() + "》，等待您的审批",
+                "RESULT_SUBMITTED", resultId, "RESULT");
     }
 
     /**
@@ -121,6 +127,11 @@ public class ResultService extends ServiceImpl<ResultMapper, PlanResult> {
 
         approvalLogService.log(resultId, leaderId, "APPROVE",
                 fromStatus.getCode(), toStatus.getCode(), comment);
+
+        // 通知员工：成果已通过
+        notificationService.sendNotification(result.getUserId(),
+                "成果审批通过", "您的成果《" + result.getTitle() + "》已通过审批",
+                "RESULT_APPROVED", resultId, "RESULT");
     }
 
     /**
@@ -143,6 +154,15 @@ public class ResultService extends ServiceImpl<ResultMapper, PlanResult> {
 
         approvalLogService.log(resultId, leaderId, "REJECT",
                 fromStatus.getCode(), toStatus.getCode(), comment);
+
+        // 通知员工：成果已驳回
+        String rejectContent = "您的成果《" + result.getTitle() + "》已被驳回";
+        if (comment != null && !comment.isBlank()) {
+            rejectContent += "，原因：" + comment;
+        }
+        notificationService.sendNotification(result.getUserId(),
+                "成果审批驳回", rejectContent,
+                "RESULT_REJECTED", resultId, "RESULT");
     }
 
     /**

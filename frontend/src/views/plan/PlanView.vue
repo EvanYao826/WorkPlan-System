@@ -33,7 +33,7 @@
 
     <!-- 表格 -->
     <el-card shadow="never" class="table-card">
-      <el-table :data="tableData" v-loading="loading" stripe>
+      <el-table :data="tableData" v-loading="loading" stripe :row-class-name="rowClassName">
         <el-table-column type="index" label="#" width="50" />
         <el-table-column prop="title" label="计划标题" min-width="180" />
         <el-table-column prop="type" label="类型" width="80" align="center">
@@ -131,8 +131,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getPlanList, getPlanDetail, submitPlan, withdrawPlan } from '../../api/plan'
 import { useUserStore } from '../../store/index'
@@ -140,6 +140,7 @@ import PlanForm from '../../components/PlanForm.vue'
 import ApproveDialog from '../../components/ApproveDialog.vue'
 
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 const isLeader = computed(() => userStore.role === 'LEADER')
 const currentUserId = computed(() => userStore.userId)
@@ -255,11 +256,48 @@ async function handleDetail(row) {
   detailVisible.value = true
 }
 
-onMounted(() => {
-  fetchData()
+function rowClassName({ row }) {
+  return `row-id-${row.id}`
+}
+
+function startHighlight(id) {
+  // 多等一会，确保 el-table 渲染完成
+  setTimeout(() => {
+    const row = document.querySelector(`.row-id-${id}`)
+    if (!row) {
+      console.warn('[highlight] 未找到行, id=', id, '当前页面数据ids=', tableData.value.map(r => r.id))
+      return
+    }
+    const cells = row.querySelectorAll('td')
+    let count = 0
+    const interval = setInterval(() => {
+      const color = count % 2 === 0 ? '#d9ecff' : ''
+      cells.forEach(td => { td.style.backgroundColor = color })
+      count++
+      if (count >= 6) {
+        clearInterval(interval)
+        cells.forEach(td => { td.style.backgroundColor = '' })
+        router.replace({ query: { ...route.query, highlight: undefined } })
+      }
+    }, 300)
+  }, 800)
+}
+
+watch(() => route.query.highlight, (val) => {
+  if (val && tableData.value.length > 0) {
+    startHighlight(val)
+  }
+})
+
+onMounted(async () => {
+  await fetchData()
   // 快捷操作跳转过来时自动打开新建弹框
   if (route.query.action === 'create') {
     openCreate()
+  }
+  // 通知跳转过来时高亮对应行
+  if (route.query.highlight) {
+    startHighlight(route.query.highlight)
   }
 })
 </script>

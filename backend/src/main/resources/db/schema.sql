@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS `notification` (
     `user_id`       BIGINT       NOT NULL COMMENT '接收人ID',
     `title`         VARCHAR(100) NOT NULL COMMENT '通知标题',
     `content`       VARCHAR(500) NOT NULL COMMENT '通知内容',
-    `type`          VARCHAR(30)  NOT NULL COMMENT '通知类型: PLAN_APPROVED-计划通过, PLAN_REJECTED-计划驳回, RESULT_APPROVED-成果通过, RESULT_REJECTED-成果驳回',
+    `type`          VARCHAR(30)  NOT NULL COMMENT '通知类型: PLAN_SUBMITTED-计划待审, PLAN_APPROVED-计划通过, PLAN_REJECTED-计划驳回, RESULT_SUBMITTED-成果待审, RESULT_APPROVED-成果通过, RESULT_REJECTED-成果驳回',
     `related_id`    BIGINT       DEFAULT NULL COMMENT '关联业务ID(计划ID或成果ID)',
     `related_type`  VARCHAR(10)  DEFAULT NULL COMMENT '关联业务类型: PLAN-计划, RESULT-成果',
     `is_read`       TINYINT      NOT NULL DEFAULT 0 COMMENT '是否已读: 0-未读, 1-已读',

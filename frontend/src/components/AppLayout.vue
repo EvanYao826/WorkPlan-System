@@ -57,6 +57,7 @@
         </div>
 
         <div class="header-right">
+          <NotificationBell ref="notificationBell" />
           <el-dropdown trigger="click">
             <div class="user-badge">
               <el-avatar :size="32" class="avatar">
@@ -89,11 +90,13 @@ import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../store/index'
 import { removeToken } from '../utils/auth'
+import NotificationBell from './NotificationBell.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const isCollapse = ref(false)
+const notificationBell = ref(null)
 
 function handleLogout() {
   removeToken()
@@ -158,6 +161,7 @@ function handleLogout() {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 16px;
 }
 
 .user-badge {

@@ -24,7 +24,7 @@
 
     <!-- 表格 -->
     <el-card shadow="never" class="table-card">
-      <el-table :data="tableData" v-loading="loading" stripe>
+      <el-table :data="tableData" v-loading="loading" stripe :row-class-name="rowClassName">
         <el-table-column type="index" label="#" width="50" />
         <el-table-column prop="title" label="成果标题" min-width="180" />
         <el-table-column prop="planId" label="关联计划" width="140" align="center">
@@ -114,13 +114,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getResultList, getResultDetail, withdrawResult } from '../../api/result'
 import { useUserStore } from '../../store/index'
 import ResultForm from '../../components/ResultForm.vue'
 import ApproveDialog from '../../components/ApproveDialog.vue'
 
+const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 const isLeader = computed(() => userStore.role === 'LEADER')
 const currentUserId = computed(() => userStore.userId)
@@ -199,8 +202,43 @@ async function handleDetail(row) {
   detailVisible.value = true
 }
 
-onMounted(() => {
-  fetchData()
+function rowClassName({ row }) {
+  return `row-id-${row.id}`
+}
+
+function startHighlight(id) {
+  setTimeout(() => {
+    const row = document.querySelector(`.row-id-${id}`)
+    if (!row) {
+      console.warn('[highlight] 未找到行, id=', id, '当前页面数据ids=', tableData.value.map(r => r.id))
+      return
+    }
+    const cells = row.querySelectorAll('td')
+    let count = 0
+    const interval = setInterval(() => {
+      const color = count % 2 === 0 ? '#d9ecff' : ''
+      cells.forEach(td => { td.style.backgroundColor = color })
+      count++
+      if (count >= 6) {
+        clearInterval(interval)
+        cells.forEach(td => { td.style.backgroundColor = '' })
+        router.replace({ query: { ...route.query, highlight: undefined } })
+      }
+    }, 300)
+  }, 800)
+}
+
+watch(() => route.query.highlight, (val) => {
+  if (val && tableData.value.length > 0) {
+    startHighlight(val)
+  }
+})
+
+onMounted(async () => {
+  await fetchData()
+  if (route.query.highlight) {
+    startHighlight(route.query.highlight)
+  }
 })
 </script>
 

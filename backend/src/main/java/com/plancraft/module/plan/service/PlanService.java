@@ -15,6 +15,7 @@ import com.plancraft.module.plan.mapper.PlanMapper;
 import com.plancraft.module.plan.strategy.DayPlanSubmitStrategy;
 import com.plancraft.module.plan.strategy.MonthPlanSubmitStrategy;
 import com.plancraft.module.plan.strategy.PlanSubmitStrategy;
+import com.plancraft.module.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class PlanService extends ServiceImpl<PlanMapper, Plan> {
 
     private final StateMachine<PlanStatus, PlanEvent> planStateMachine;
     private final PlanApprovalLogService approvalLogService;
+    private final NotificationService notificationService;
 
     @Lazy
     private final HandlerChain<Plan> planHandlerChain;
@@ -115,6 +117,11 @@ public class PlanService extends ServiceImpl<PlanMapper, Plan> {
         // 5. 写审批日志
         approvalLogService.log(planId, userId, "SUBMIT",
                 fromStatus.getCode(), toStatus.getCode(), null);
+
+        // 6. 通知领导：有新计划待审批
+        notificationService.sendNotification(approveLeaderId,
+                "新计划待审批", "员工提交了计划《" + plan.getTitle() + "》，等待您的审批",
+                "PLAN_SUBMITTED", planId, "PLAN");
     }
 
     /**
@@ -136,6 +143,11 @@ public class PlanService extends ServiceImpl<PlanMapper, Plan> {
 
         approvalLogService.log(planId, leaderId, "APPROVE",
                 fromStatus.getCode(), toStatus.getCode(), comment);
+
+        // 通知员工：计划已通过
+        notificationService.sendNotification(plan.getUserId(),
+                "计划审批通过", "您的计划《" + plan.getTitle() + "》已通过审批",
+                "PLAN_APPROVED", planId, "PLAN");
     }
 
     /**
@@ -158,6 +170,15 @@ public class PlanService extends ServiceImpl<PlanMapper, Plan> {
 
         approvalLogService.log(planId, leaderId, "REJECT",
                 fromStatus.getCode(), toStatus.getCode(), comment);
+
+        // 通知员工：计划已驳回
+        String rejectContent = "您的计划《" + plan.getTitle() + "》已被驳回";
+        if (comment != null && !comment.isBlank()) {
+            rejectContent += "，原因：" + comment;
+        }
+        notificationService.sendNotification(plan.getUserId(),
+                "计划审批驳回", rejectContent,
+                "PLAN_REJECTED", planId, "PLAN");
     }
 
     /**

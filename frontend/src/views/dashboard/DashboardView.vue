@@ -50,7 +50,21 @@
           <template #header>
             <span class="card-title">最近通知</span>
           </template>
-          <el-empty description="暂无通知" :image-size="60" />
+          <div v-if="notifications.length === 0">
+            <el-empty description="暂无通知" :image-size="60" />
+          </div>
+          <div v-else class="notification-list">
+            <div
+              v-for="item in notifications"
+              :key="item.id"
+              class="notification-item"
+              @click="handleNotificationClick(item)"
+            >
+              <span class="dot" v-if="item.isRead === 0"></span>
+              <span class="noti-title">{{ item.title }}</span>
+              <span class="noti-time">{{ formatTime(item.createTime) }}</span>
+            </div>
+          </div>
         </el-card>
       </el-col>
     </el-row>
@@ -62,12 +76,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../store/index'
 import { getStatistics } from '../../api/statistics'
+import { getNotificationList } from '../../api/notification'
 
 const router = useRouter()
 const userStore = useUserStore()
 const isLeader = computed(() => userStore.role === 'LEADER')
 
 const stats = ref({})
+const notifications = ref([])
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -100,10 +116,35 @@ const statCards = computed(() => {
   ]
 })
 
+function handleNotificationClick(item) {
+  if (item.relatedType === 'PLAN') {
+    router.push({ path: '/plan', query: { highlight: item.relatedId } })
+  } else if (item.relatedType === 'RESULT') {
+    router.push({ path: '/result', query: { highlight: item.relatedId } })
+  }
+}
+
+function formatTime(time) {
+  if (!time) return ''
+  const d = new Date(time)
+  const now = new Date()
+  const diff = now - d
+  if (diff < 60000) return '刚刚'
+  if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前'
+  if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前'
+  return d.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })
+}
+
 onMounted(async () => {
   try {
     const res = await getStatistics()
     stats.value = res.data
+  } catch (e) {
+    // 静默失败
+  }
+  try {
+    const res = await getNotificationList({ page: 1, size: 5 })
+    notifications.value = res.data.records
   } catch (e) {
     // 静默失败
   }
@@ -177,5 +218,52 @@ onMounted(async () => {
 .quick-actions {
   display: flex;
   gap: 12px;
+}
+
+.notification-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: pointer;
+  transition: background 0.15s;
+  padding-left: 4px;
+  padding-right: 4px;
+  border-radius: 4px;
+}
+.notification-item:hover {
+  background: #f5f7fa;
+}
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #409eff;
+  flex-shrink: 0;
+}
+
+.noti-title {
+  flex: 1;
+  font-size: 13px;
+  color: #303133;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.noti-time {
+  font-size: 11px;
+  color: #c0c4cc;
+  flex-shrink: 0;
 }
 </style>

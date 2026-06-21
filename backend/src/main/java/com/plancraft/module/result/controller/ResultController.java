@@ -4,11 +4,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.plancraft.common.result.R;
 import com.plancraft.module.result.entity.PlanResult;
 import com.plancraft.module.result.service.ResultService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "成果管理", description = "成果增删改查、提交审批、审批通过/驳回")
 @RestController
 @RequestMapping("/api/result")
 @RequiredArgsConstructor

@@ -4,12 +4,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.plancraft.common.result.R;
 import com.plancraft.module.notification.entity.Notification;
 import com.plancraft.module.notification.service.NotificationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Tag(name = "通知管理", description = "通知列表、未读数、标记已读、清除")
 @RestController
 @RequestMapping("/api/notification")
 @RequiredArgsConstructor

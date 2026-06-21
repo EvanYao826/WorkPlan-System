@@ -18,6 +18,9 @@
           <el-button v-if="!isLeader" type="success" @click="formVisible = true">
             <el-icon><Plus /></el-icon>提交成果
           </el-button>
+          <el-button type="warning" @click="handleExport">
+            <el-icon><Download /></el-icon>导出
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -118,6 +121,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getResultList, getResultDetail, withdrawResult } from '../../api/result'
+import { exportResults } from '../../api/export'
 import { useUserStore } from '../../store/index'
 import ResultForm from '../../components/ResultForm.vue'
 import ApproveDialog from '../../components/ApproveDialog.vue'
@@ -193,6 +197,22 @@ async function handleWithdraw(row) {
     fetchData()
   } catch (e) {
     // 错误已由拦截器处理
+  }
+}
+
+async function handleExport() {
+  try {
+    const res = await exportResults()
+    const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = '成果列表.xlsx'
+    link.click()
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
+  } catch (e) {
+    ElMessage.error('导出失败')
   }
 }
 

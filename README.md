@@ -140,7 +140,7 @@ flowchart LR
 | Vue Router | 4.3 | 路由管理 |
 | Pinia | 2.1 | 状态管理 |
 | Axios | 1.7 | HTTP 客户端 |
-| ECharts | - | 数据可视化（Dashboard） |
+| ECharts | 5.5 | 数据可视化（Dashboard 饼图） |
 
 ---
 
@@ -216,7 +216,8 @@ PlanCraft/
 │   └── src/main/java/com/plancraft/
 │       ├── config/                     # 配置层
 │       │   ├── SecurityConfig              # Spring Security + JWT
-│       │   ├── MybatisPlusConfig           # 分页 + 乐观锁
+│       │   ├── MybatisPlusConfig           # 分页 + 乐观锁 + 数据权限
+│       │   ├── DataPermissionInterceptor   # ★ 数据权限拦截器
 │       │   ├── RedisConfig                 # Redis 序列化
 │       │   ├── CorsConfig                  # 跨域
 │       │   └── DataInitializer             # 密码初始化
@@ -235,13 +236,16 @@ PlanCraft/
 │       │   ├── strategy/                   # 策略模式
 │       │   └── chain/                      # 责任链
 │       └── module/                     # 业务模块
-│           ├── user/                       # 用户 + 部门
+│           ├── user/                       # 用户 + 汇报关系
+│           ├── department/                 # ★ 部门管理
 │           ├── plan/                       # 计划 + 审批
 │           ├── result/                     # 成果 + 审批
 │           └── notification/               # 通知
 ├── frontend/                           # Vue 3 前端
 │   ├── src/
 │   │   ├── api/                        # Axios 封装
+│   │   ├── components/                 # 公共组件
+│   │   ├── directives/                 # ★ 权限指令
 │   │   ├── router/                     # 路由 + 登录守卫
 │   │   ├── store/                      # Pinia 状态管理
 │   │   ├── utils/                      # Token 工具
@@ -277,7 +281,7 @@ PlanCraft/
 | 责任链模式 | `framework/chain/` | 单一职责、链式调用、可插拔校验 |
 | JWT 认证 | `auth/` + `config/SecurityConfig` | Token 生成/校验、无状态认证、过滤器链 |
 | MyBatis-Plus | `config/MybatisPlusConfig` | 分页插件、乐观锁、动态 SQL |
-| 数据权限 | `framework/datapermission/` | SQL 拦截器、数据隔离 |
+| 数据权限 | `config/DataPermissionInterceptor` | SQL 拦截器、数据隔离 |
 | RESTful API | `module/*/controller/` | 接口设计、状态码、权限控制 |
 | Vue 3 全栈 | `frontend/` | 组合式 API、路由守卫、Axios 封装 |
 

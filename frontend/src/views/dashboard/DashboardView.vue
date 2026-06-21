@@ -25,7 +25,7 @@
       </el-col>
     </el-row>
 
-    <!-- 快捷入口 -->
+    <!-- 快捷入口 + 通知 -->
     <el-row :gutter="16" style="margin-top: 16px">
       <el-col :span="12">
         <el-card shadow="never" class="quick-card">
@@ -68,15 +68,36 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 图表区 -->
+    <el-row :gutter="16" style="margin-top: 16px">
+      <el-col :span="12">
+        <el-card shadow="never" class="chart-card">
+          <template #header>
+            <span class="card-title">计划状态分布</span>
+          </template>
+          <div ref="planChartRef" class="chart-container"></div>
+        </el-card>
+      </el-col>
+      <el-col :span="12">
+        <el-card shadow="never" class="chart-card">
+          <template #header>
+            <span class="card-title">成果状态分布</span>
+          </template>
+          <div ref="resultChartRef" class="chart-container"></div>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../store/index'
 import { getStatistics } from '../../api/statistics'
 import { getNotificationList } from '../../api/notification'
+import * as echarts from 'echarts'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -84,6 +105,12 @@ const isLeader = computed(() => userStore.role === 'LEADER')
 
 const stats = ref({})
 const notifications = ref([])
+
+// 图表相关
+const planChartRef = ref(null)
+const resultChartRef = ref(null)
+let planChart = null
+let resultChart = null
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -148,7 +175,66 @@ onMounted(async () => {
   } catch (e) {
     // 静默失败
   }
+
+  // 初始化图表
+  await nextTick()
+  initCharts()
 })
+
+onBeforeUnmount(() => {
+  planChart?.dispose()
+  resultChart?.dispose()
+  window.removeEventListener('resize', handleResize)
+})
+
+function handleResize() {
+  planChart?.resize()
+  resultChart?.resize()
+}
+
+function initCharts() {
+  if (planChartRef.value) {
+    planChart = echarts.init(planChartRef.value)
+    planChart.setOption({
+      tooltip: { trigger: 'item' },
+      legend: { bottom: 0 },
+      series: [{
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+        label: { show: false },
+        emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } },
+        data: [
+          { value: stats.value.pendingPlans || 0, name: '待审批', itemStyle: { color: '#e6a23c' } },
+          { value: stats.value.myPlans ? stats.value.myPlans - (stats.value.pendingPlans || 0) : 0, name: '其他', itemStyle: { color: '#409eff' } },
+        ],
+      }],
+    })
+  }
+
+  if (resultChartRef.value) {
+    resultChart = echarts.init(resultChartRef.value)
+    resultChart.setOption({
+      tooltip: { trigger: 'item' },
+      legend: { bottom: 0 },
+      series: [{
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+        label: { show: false },
+        emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } },
+        data: [
+          { value: stats.value.pendingResults || 0, name: '待审批', itemStyle: { color: '#e6a23c' } },
+          { value: stats.value.myResults ? stats.value.myResults - (stats.value.pendingResults || 0) : 0, name: '其他', itemStyle: { color: '#67c23a' } },
+        ],
+      }],
+    })
+  }
+
+  window.addEventListener('resize', handleResize)
+}
 </script>
 
 <style scoped>
@@ -265,5 +351,13 @@ onMounted(async () => {
   font-size: 11px;
   color: #c0c4cc;
   flex-shrink: 0;
+}
+
+.chart-card {
+  border: 1px solid #f0f0f0;
+}
+
+.chart-container {
+  height: 240px;
 }
 </style>

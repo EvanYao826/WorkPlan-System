@@ -6,6 +6,8 @@ import com.plancraft.auth.util.JwtUtil;
 import com.plancraft.common.result.R;
 import com.plancraft.module.user.entity.User;
 import com.plancraft.module.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
+@Tag(name = "认证管理", description = "登录认证相关接口")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
+    @Operation(summary = "用户登录", description = "用户名密码登录，返回 JWT Token")
     @PostMapping("/login")
     public R<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         // 1. 认证（Spring Security 校验用户名密码）

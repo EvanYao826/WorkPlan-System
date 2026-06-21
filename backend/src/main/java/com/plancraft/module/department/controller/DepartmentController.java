@@ -3,6 +3,8 @@ package com.plancraft.module.department.controller;
 import com.plancraft.common.result.R;
 import com.plancraft.module.department.entity.Department;
 import com.plancraft.module.department.service.DepartmentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "部门管理", description = "部门树增删改查")
 @RestController
 @RequestMapping("/api/department")
 @RequiredArgsConstructor

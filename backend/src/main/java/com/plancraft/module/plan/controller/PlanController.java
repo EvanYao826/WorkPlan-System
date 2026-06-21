@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.plancraft.common.result.R;
 import com.plancraft.module.plan.entity.Plan;
 import com.plancraft.module.plan.service.PlanService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
+@Tag(name = "计划管理", description = "计划增删改查、提交审批、审批通过/驳回、撤回")
 @RestController
 @RequestMapping("/api/plan")
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class PlanController {
      * 同事：只能看自己的计划
      * 领导：只看分配给自己审批的计划
      */
+    @Operation(summary = "查询计划列表", description = "分页+多条件筛选，员工看自己的，领导看下属的")
     @GetMapping("/list")
     public R<IPage<Plan>> list(
             @RequestParam(required = false) Integer type,
@@ -56,6 +60,7 @@ public class PlanController {
     /**
      * 查看计划详情
      */
+    @Operation(summary = "查看计划详情")
     @GetMapping("/{id}")
     public R<Plan> detail(@PathVariable Long id) {
         Plan plan = planService.getById(id);
@@ -67,6 +72,7 @@ public class PlanController {
      * 如果传了 approveLeaderId，则创建后直接提交审批（一个事务，失败全部回滚）
      * 如果没传，则保存为草稿
      */
+    @Operation(summary = "创建计划", description = "创建草稿或直接提交审批")
     @PostMapping
     public R<Plan> create(@Valid @RequestBody Plan plan, Authentication authentication) {
         Long userId = (Long) authentication.getDetails();
@@ -86,6 +92,7 @@ public class PlanController {
     /**
      * 提交审批
      */
+    @Operation(summary = "提交审批")
     @PutMapping("/{id}/submit")
     public R<Void> submit(@PathVariable Long id,
                           @RequestBody java.util.Map<String, String> body,
@@ -100,6 +107,7 @@ public class PlanController {
     /**
      * 审批通过
      */
+    @Operation(summary = "审批通过")
     @PutMapping("/{id}/approve")
     public R<Void> approve(@PathVariable Long id,
                            @RequestBody(required = false) java.util.Map<String, String> body,
@@ -113,6 +121,7 @@ public class PlanController {
     /**
      * 审批驳回
      */
+    @Operation(summary = "审批驳回")
     @PutMapping("/{id}/reject")
     public R<Void> reject(@PathVariable Long id,
                           @RequestBody(required = false) java.util.Map<String, String> body,
@@ -126,6 +135,7 @@ public class PlanController {
     /**
      * 撤回
      */
+    @Operation(summary = "撤回计划")
     @PutMapping("/{id}/withdraw")
     public R<Void> withdraw(@PathVariable Long id, Authentication authentication) {
         Long userId = (Long) authentication.getDetails();

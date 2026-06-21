@@ -7,6 +7,8 @@ import com.plancraft.module.plan.enums.PlanStatus;
 import com.plancraft.module.plan.service.PlanService;
 import com.plancraft.module.result.entity.PlanResult;
 import com.plancraft.module.result.service.ResultService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Tag(name = "统计分析", description = "Dashboard 统计数据")
 @RestController
 @RequestMapping("/api/statistics")
 @RequiredArgsConstructor

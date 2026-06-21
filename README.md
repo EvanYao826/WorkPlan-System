@@ -115,6 +115,22 @@ flowchart LR
 
 ---
 
+## 📸 效果展示
+
+| 登录页 | 工作台 |
+| :----: | :----: |
+| ![登录页](docs/screenshots/login.png) | ![工作台](docs/screenshots/dashboard.png) |
+
+| 计划管理 | 审批弹框 |
+| :----: | :----: |
+| ![计划管理](docs/screenshots/plan.png) | ![审批弹框](docs/screenshots/approve.png) |
+
+| 成果管理 | 部门管理 |
+| :----: | :----: |
+| ![成果管理](docs/screenshots/result.png) | ![部门管理](docs/screenshots/department.png) |
+
+---
+
 ## 🛠️ 技术栈
 
 ### 后端
@@ -141,22 +157,6 @@ flowchart LR
 | Pinia | 2.1 | 状态管理 |
 | Axios | 1.7 | HTTP 客户端 |
 | ECharts | 5.5 | 数据可视化（Dashboard 饼图） |
-
----
-
-## 📸 效果展示
-
-| 登录页 | 工作台 |
-| :----: | :----: |
-| ![登录页](docs/screenshots/login.png) | ![工作台](docs/screenshots/dashboard.png) |
-
-| 计划管理 | 审批弹框 |
-| :----: | :----: |
-| ![计划管理](docs/screenshots/plan.png) | ![审批弹框](docs/screenshots/approve.png) |
-
-| 成果管理 | 部门管理 |
-| :----: | :----: |
-| ![成果管理](docs/screenshots/result.png) | ![部门管理](docs/screenshots/department.png) |
 
 ---
 
